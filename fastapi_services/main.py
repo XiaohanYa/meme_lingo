@@ -45,12 +45,14 @@ async def translate(
             buffer.write(await file.read())
         
         # Call the generate function
-        translation = generate_response(file_location, target_language)
+        translation, image_response = generate_response(file_location, target_language)
         logger.info(f"Generated translation in target_language: {translation}")
-
-        # Clean up the temp file
         os.remove(file_location)
-
+        
+        if image_response:
+            return image_response
+        # Clean up the temp file
+        
         return {"translation": translation}
 
     except Exception as e:

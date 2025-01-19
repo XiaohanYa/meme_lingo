@@ -88,23 +88,41 @@ export default function Home() {
             body: formData,
         });
         
-        const result = await response.json();
-        console.log('Translation result:', result);
+        // Check if the response is an image
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('image')) {
+            // Handle image response
+            const imageBlob = await response.blob();
+            const imageUrl = URL.createObjectURL(imageBlob);
+            
+            const updatedEvents = myEvents.concat([
+                { 
+                    type: 'assistant',
+                    image: imageUrl 
+                }
+            ]);
+            console.log('Updated events:', updatedEvents);
+            setEvents(updatedEvents);
+        } else {
+            // Handle text response
+            const result = await response.json();
+            console.log('Translation result:', result);
 
-        if (!response.ok) {
-            setError(result.detail || 'Translation failed');
-            setIsProcessing(false);
-            return;
-        }
-
-        const updatedEvents = myEvents.concat([
-            { 
-                type: 'assistant',
-                translation: result.translation 
+            if (!response.ok) {
+                setError(result.detail || 'Translation failed');
+                setIsProcessing(false);
+                return;
             }
-        ]);
-        console.log('Updated events:', updatedEvents);
-        setEvents(updatedEvents);
+
+            const updatedEvents = myEvents.concat([
+                { 
+                    type: 'assistant',
+                    translation: result.translation 
+                }
+            ]);
+            console.log('Updated events:', updatedEvents);
+            setEvents(updatedEvents);
+        }
         
     } catch (error) {
         console.error('Translation error:', error);
