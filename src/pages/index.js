@@ -20,12 +20,12 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [seed] = useState(getRandomSeed());
-  const [initialPrompt, setInitialPrompt] = useState(seed.prompt);
+  const [initialPrompt, setInitialPrompt] = useState("Select a language (e.g., Spanish, French, German)");
 
-  // set the initial image from a random seed
-  useEffect(() => {
-    setEvents([{ image: seed.image }]);
-  }, [seed.image]);
+  // Remove or comment out this useEffect if you don't want any initial image
+  // useEffect(() => {
+  //   setEvents([{ image: seed.image }]);
+  // }, [seed.image]);
 
   const handleImageDropped = async (image) => {
     try {
@@ -47,62 +47,79 @@ export default function Home() {
     setIsProcessing(true);
     setInitialPrompt("");
 
-    // make a copy so that the second call to setEvents here doesn't blow away the first. Why?
     const myEvents = [...events, { prompt }];
     setEvents(myEvents);
 
-    const body = {
-      prompt,
-      image: lastImage,
-    };
-
-    const response = await fetch("/api/predictions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
-    let prediction = await response.json();
-
-    if (response.status !== 201) {
-      setError(prediction.detail);
-      return;
-    }
-
-    while (
-      prediction.status !== "succeeded" &&
-      prediction.status !== "failed"
-    ) {
-      await sleep(500);
-      const response = await fetch("/api/predictions/" + prediction.id);
-      prediction = await response.json();
-      if (response.status !== 200) {
-        setError(prediction.detail);
+    // Create FormData to send file
+    const formData = new FormData();
+    
+    // Convert base64/URL image to blob if needed
+    let imageBlob;
+    try {
+        if (lastImage.startsWith('data:')) {
+            console.log('Converting base64 image to blob');
+            const response = await fetch(lastImage);
+            imageBlob = await response.blob();
+        } else {
+            console.log('Converting URL image to blob');
+            const response = await fetch(lastImage);
+            imageBlob = await response.blob();
+        }
+        console.log('Image blob created:', imageBlob.size, 'bytes');
+        
+        // Append the file and target language to FormData
+        formData.append('file', imageBlob, 'image.png');
+        formData.append('target_language', prompt);
+        
+        console.log('FormData contents:');
+        for (let pair of formData.entries()) {
+            console.log(pair[0], pair[1]);
+        }
+    } catch (error) {
+        console.error('Error preparing image:', error);
+        setError('Error preparing image: ' + error.message);
+        setIsProcessing(false);
         return;
-      }
-
-      // just for bookkeeping
-      setPredictions(predictions.concat([prediction]));
-
-      if (prediction.status === "succeeded") {
-        setEvents(
-          myEvents.concat([
-            { image: prediction.output?.[prediction.output.length - 1] },
-          ])
-        );
-      }
     }
 
-    setIsProcessing(false);
+    try {
+        const response = await fetch("http://localhost:8000/translate", {
+            method: "POST",
+            body: formData,
+        });
+        
+        const result = await response.json();
+        console.log('Translation result:', result);
+
+        if (!response.ok) {
+            setError(result.detail || 'Translation failed');
+            setIsProcessing(false);
+            return;
+        }
+
+        const updatedEvents = myEvents.concat([
+            { 
+                type: 'assistant',
+                translation: result.translation 
+            }
+        ]);
+        console.log('Updated events:', updatedEvents);
+        setEvents(updatedEvents);
+        
+    } catch (error) {
+        console.error('Translation error:', error);
+        setError(error.message);
+    } finally {
+        setIsProcessing(false);
+    }
   };
 
   const startOver = async (e) => {
     e.preventDefault();
-    setEvents(events.slice(0, 1));
+    setEvents([]);
     setError(null);
     setIsProcessing(false);
-    setInitialPrompt(seed.prompt);
+    setInitialPrompt("Select a language (e.g., Spanish, French, German)");
   };
 
   return (

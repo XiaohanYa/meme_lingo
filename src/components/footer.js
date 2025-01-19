@@ -11,10 +11,6 @@ export default function Footer({ events, startOver, handleImageDropped }) {
   return (
     <footer className="w-full my-8">
       <div className="text-center">
-        <Link href="/about" className="lil-button">
-
-          <InfoIcon className="icon" />What is this?
-        </Link>
 
         {events.length > 1 && (
           <button className="lil-button" onClick={startOver}>
@@ -37,7 +33,7 @@ export default function Footer({ events, startOver, handleImageDropped }) {
         )}
 
         <Link
-          href="https://github.com/replicate/instruct-pix2pix-demo"
+          href="https://github.com/XiaohanYa/meme_lingo"
           className="lil-button"
           target="_blank"
           rel="noopener noreferrer">
@@ -47,34 +43,13 @@ export default function Footer({ events, startOver, handleImageDropped }) {
       </div>
 
       <div className="text-center lil-text mt-8">
-      <div className="inline-block py-2 px-4 border border-yellow-200 rounded-lg bg-[#fef6aa]">
-      🤔 Are you a developer and want to learn how to build this? Check out the{" "}
-        <Link
-          href="https://github.com/replicate/paint-with-words#readme"
-          target="_blank">
-          README
-        </Link>.
-      </div>
-      </div>
-
-      <div className="text-center lil-text mt-8">
         Powered by{" "}
-        <Link href="https://www.timothybrooks.com/instruct-pix2pix/" target="_blank">
-          InstructPix2Pix
-        </Link>
-        ,{" "}
-        <Link
-          href="https://replicate.com/timothybrooks/instruct-pix2pix?utm_source=project&utm_campaign=paintbytext"
-          target="_blank">
-          Replicate
-        </Link>
-        ,{" "}
-        <Link href="https://vercel.com/templates/ai" target="_blank">
-          Vercel
+        <Link href="https://ai.google.dev/gemini-api/docs/models/gemini-v2" target="_blank">
+          Gemini2.0
         </Link>
         , and{" "}
-        <Link href="https://github.com/replicate/instruct-pix2pix-demo" target="_blank">
-          GitHub
+        <Link href="https://vercel.com/templates/ai" target="_blank">
+          Vercel
         </Link>
       </div>
     </footer>

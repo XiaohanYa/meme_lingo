@@ -51,8 +51,8 @@ export default function Messages({ events, isProcessing, onUndo }) {
               {(isProcessing || index < events.length - 1) && (
                 <Message sender="replicate" isSameSender>
                   {index === 0
-                    ? "What should we change?"
-                    : "What should we change now?"}
+                    ? "Upload an meme and start translation"
+                    : "Upload an meme and start translation"}
                 </Message>
               )}
             </Fragment>
@@ -63,6 +63,14 @@ export default function Messages({ events, isProcessing, onUndo }) {
           return (
             <Message key={"prompt-" + index} sender="user">
               {ev.prompt}
+            </Message>
+          );
+        }
+
+        if (ev.type === 'assistant' && ev.translation) {
+          return (
+            <Message key={"translation-" + index} sender="replicate">
+              {ev.translation}
             </Message>
           );
         }
